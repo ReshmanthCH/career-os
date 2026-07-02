@@ -1,6 +1,9 @@
 import User from "../models/User.js";
 import { hashPassword } from "../utils/password.js";
 
+import { comparePassword } from "../utils/password.js";
+import { generateToken } from "../utils/jwt.js";
+
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -36,6 +39,65 @@ export const registerUser = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "User registered successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+    });
+  }
+};
+export const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Check required fields
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required",
+      });
+    }
+
+    // Find user
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    // Compare passwords
+    const isPasswordCorrect = await comparePassword(
+      password,
+      user.password
+    );
+
+    if (!isPasswordCorrect) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    // Generate JWT
+    const token = generateToken({
+      id: user._id,
+    });
+
+    // Send response
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token,
       user: {
         id: user._id,
         name: user.name,
