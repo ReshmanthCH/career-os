@@ -1,120 +1,90 @@
 import User from "../models/User.js";
-import { hashPassword } from "../utils/password.js";
-
-import { comparePassword } from "../utils/password.js";
+import { hashPassword, comparePassword } from "../utils/password.js";
 import { generateToken } from "../utils/jwt.js";
 
-export const registerUser = async (req, res) => {
+export const registerUser = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
-    // Check if all fields are provided
-    if (!name || !email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required",
-      });
-    }
-
-    // Check if email already exists
-    const existingUser = await User.findOne({ email });
-
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: "User already exists",
+        message: "A user with this email already exists.",
       });
     }
 
-    // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Create user
     const user = await User.create({
-      name,
-      email,
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
       password: hashedPassword,
     });
 
+    const token = generateToken({ id: user._id });
+
     res.status(201).json({
       success: true,
-      message: "User registered successfully",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-      },
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Something went wrong",
-    });
-  }
-};
-export const loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // Check required fields
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Email and password are required",
-      });
-    }
-
-    // Find user
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid email or password",
-      });
-    }
-
-    // Compare passwords
-    const isPasswordCorrect = await comparePassword(
-      password,
-      user.password
-    );
-
-    if (!isPasswordCorrect) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid email or password",
-      });
-    }
-
-    // Generate JWT
-    const token = generateToken({
-      id: user._id,
-    });
-
-    // Send response
-    res.status(200).json({
-      success: true,
-      message: "Login successful",
+      message: "User registered successfully.",
       token,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
+        createdAt: user.createdAt,
       },
     });
-
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Something went wrong",
-    });
+    next(error);
   }
 };
-export const getCurrentUser = (req, res) => {
-  res.status(200).json({
-    success: true,
-    user: req.user,
-  });
+
+export const loginUser = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email or password.",
+      });
+    }
+
+    const isPasswordCorrect = await comparePassword(password, user.password);
+    if (!isPasswordCorrect) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email or password.",
+      });
+    }
+
+    const token = generateToken({ id: user._id });
+
+    res.status(200).json({
+      success: true,
+      message: "Login successful.",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCurrentUser = async (req, res, next) => {
+  try {
+    res.status(200).json({
+      success: true,
+      user: req.user,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
