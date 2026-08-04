@@ -1,17 +1,20 @@
 import mongoose from "mongoose";
 
+let isConnected = false;
+
 const connectDB = async () => {
+  if (isConnected || mongoose.connection.readyState >= 1) {
+    isConnected = true;
+    return;
+  }
+
   try {
-    const connection = await mongoose.connect(process.env.MONGODB_URI);
-
-    console.log(
-      `MongoDB Connected: ${connection.connection.host}`
-    );
+    const mongoUri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/careeros";
+    const connection = await mongoose.connect(mongoUri);
+    isConnected = true;
+    console.log(`MongoDB Connected: ${connection.connection.host}`);
   } catch (error) {
-    console.error("Database Connection Failed");
-    console.error(error.message);
-
-    process.exit(1);
+    console.error("Database Connection Failed:", error.message);
   }
 };
 

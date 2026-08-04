@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 
+import connectDB from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import healthRoutes from "./routes/healthRoutes.js";
@@ -24,6 +25,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Connect DB on serverless execution
+app.use(async (req, res, next) => {
+  await connectDB();
+  next();
+});
 
 // Serve uploaded files statically
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
