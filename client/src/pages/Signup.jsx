@@ -48,7 +48,8 @@ function Signup() {
         setStep(2);
       }
     } catch (err) {
-      setLocalError(err.response?.data?.message || err.message || "Failed to send verification email.");
+      const msg = err.response?.data?.message || err.message || "Failed to send verification email.";
+      setLocalError(msg);
     } finally {
       setIsSendingOtp(false);
     }
@@ -82,7 +83,8 @@ function Signup() {
         navigate("/onboarding", { replace: true });
       }
     } catch (err) {
-      setLocalError(err.response?.data?.message || err.message || "Email verification failed.");
+      const msg = err.response?.data?.message || err.message || "Email verification failed.";
+      setLocalError(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -106,7 +108,7 @@ function Signup() {
         </div>
 
         {localError && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md text-xs text-red-700 font-medium">
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md text-xs text-red-700 font-medium leading-relaxed">
             {localError}
           </div>
         )}
