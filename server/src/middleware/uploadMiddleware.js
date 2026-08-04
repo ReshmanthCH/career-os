@@ -1,22 +1,37 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import os from "os";
 
-// Ensure upload directory exists
-const uploadDir = path.join(process.cwd(), "uploads", "resumes");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+// Safe upload directory selection (Vercel serverless uses /tmp directory)
+const isVercel = process.env.VERCEL || process.env.NODE_ENV === "production";
+const uploadDir = isVercel
+  ? path.join(os.tmpdir(), "uploads", "resumes")
+  : path.join(process.cwd(), "uploads", "resumes");
+
+try {
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+} catch (err) {
+  console.warn("Upload directory creation notice:", err.message);
 }
 
 // Storage configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
+    try {
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+    } catch (e) {}
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, `resume-${req.user._id}-${uniqueSuffix}${ext}`);
+    const userId = req.user ? req.user._id : "guest";
+    cb(null, `resume-${userId}-${uniqueSuffix}${ext}`);
   },
 });
 
