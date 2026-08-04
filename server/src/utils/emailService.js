@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 
 /**
  * Send OTP to user's email address
+ * Configured for Vercel Serverless Functions (supports Port 465 / SSL & Gmail service fallback)
  */
 export const sendOTPEmail = async (email, otp) => {
   console.log("\n==================================================");
@@ -13,18 +14,34 @@ export const sendOTPEmail = async (email, otp) => {
     const host = process.env.EMAIL_HOST;
     const user = process.env.EMAIL_USER;
     const pass = process.env.EMAIL_PASS;
-    const port = process.env.EMAIL_PORT || 587;
+    const configuredPort = process.env.EMAIL_PORT;
 
-    if (host && user && pass) {
-      const transporter = nodemailer.createTransport({
-        host,
-        port: Number(port),
-        secure: Number(port) === 465,
-        auth: { user, pass },
-        tls: {
-          rejectUnauthorized: false,
-        },
-      });
+    if (user && pass) {
+      const isGmail = (host && host.includes("gmail")) || user.includes("@gmail.com");
+      
+      // On Vercel serverless functions, port 587 is blocked. Use Port 465 (SSL) or Gmail service.
+      const transportConfig = isGmail
+        ? {
+            service: "gmail",
+            auth: { user, pass },
+            connectionTimeout: 8000,
+            greetingTimeout: 8000,
+            socketTimeout: 8000,
+          }
+        : {
+            host: host || "smtp.gmail.com",
+            port: Number(configuredPort) || 465,
+            secure: true, // SSL/TLS for Vercel
+            auth: { user, pass },
+            connectionTimeout: 8000,
+            greetingTimeout: 8000,
+            socketTimeout: 8000,
+            tls: {
+              rejectUnauthorized: false,
+            },
+          };
+
+      const transporter = nodemailer.createTransport(transportConfig);
 
       await transporter.sendMail({
         from: `"CareerOS Team" <${user}>`,
@@ -48,7 +65,7 @@ export const sendOTPEmail = async (email, otp) => {
 
     return { sent: false, reason: "SMTP credentials not configured" };
   } catch (error) {
-    console.error("⚠️ SMTP Notice:", error.message);
+    console.error("⚠️ SMTP Notice (Vercel Serverless Catch):", error.message);
     return { sent: false, reason: error.message };
   }
 };
