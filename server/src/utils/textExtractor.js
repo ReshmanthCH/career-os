@@ -2,11 +2,9 @@ import fs from "fs";
 import { createRequire } from "module";
 import mammoth from "mammoth";
 
-const require = createRequire(import.meta.url);
-const pdfParse = require("pdf-parse");
-
 /**
- * Extracts readable text from PDF or DOCX resume files.
+ * Extracts readable text from PDF or DOCX resume files safely.
+ * Lazy-loads pdf-parse to prevent Vercel serverless startup errors (@napi-rs/canvas).
  * @param {string} filePath - Path to the file on disk
  * @param {string} fileType - 'pdf' or 'docx'
  * @returns {Promise<string>} Extracted text string
@@ -21,8 +19,24 @@ export const extractTextFromFile = async (filePath, fileType) => {
   try {
     if (normalizedType === "pdf") {
       const dataBuffer = fs.readFileSync(filePath);
-      const data = await pdfParse(dataBuffer);
-      return sanitizeExtractedText(data.text || "");
+      let pdfParse;
+      try {
+        const require = createRequire(import.meta.url);
+        pdfParse = require("pdf-parse/lib/pdf-parse.js");
+      } catch (e1) {
+        try {
+          const require = createRequire(import.meta.url);
+          pdfParse = require("pdf-parse");
+        } catch (e2) {
+          console.warn("pdf-parse load notice:", e2.message);
+        }
+      }
+
+      if (pdfParse) {
+        const data = await pdfParse(dataBuffer);
+        return sanitizeExtractedText(data.text || "");
+      }
+      return "PDF text extraction module unavailable.";
     }
 
     if (normalizedType === "docx") {
