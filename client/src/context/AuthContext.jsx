@@ -4,20 +4,23 @@ import {
   registerUser as apiRegisterUser,
   getCurrentUser as apiGetCurrentUser,
 } from "../services/authService";
+import { getProfile as apiGetProfile } from "../services/profileService";
 
 export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Initialize & verify token on app load / refresh
+  // Initialize & verify token & profile on app load / refresh
   const checkAuthStatus = useCallback(async () => {
     const storedToken = localStorage.getItem("token");
     if (!storedToken) {
       setUser(null);
+      setProfile(null);
       setToken(null);
       setLoading(false);
       return;
@@ -29,15 +32,29 @@ export const AuthProvider = ({ children }) => {
       if (data.success && data.user) {
         setUser(data.user);
         setToken(storedToken);
+
+        // Fetch profile if user has completed onboarding
+        if (data.user.onboardingCompleted) {
+          try {
+            const profileRes = await apiGetProfile();
+            if (profileRes.success) {
+              setProfile(profileRes.profile);
+            }
+          } catch (profileErr) {
+            console.error("Failed to load profile:", profileErr);
+          }
+        }
       } else {
         localStorage.removeItem("token");
         setUser(null);
+        setProfile(null);
         setToken(null);
       }
     } catch (err) {
       console.error("Auth check failed:", err);
       localStorage.removeItem("token");
       setUser(null);
+      setProfile(null);
       setToken(null);
     } finally {
       setLoading(false);
@@ -57,6 +74,16 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem("token", data.token);
         setToken(data.token);
         setUser(data.user);
+
+        if (data.user?.onboardingCompleted) {
+          const profileRes = await apiGetProfile();
+          if (profileRes.success) {
+            setProfile(profileRes.profile);
+          }
+        } else {
+          setProfile(null);
+        }
+
         return data;
       }
     } catch (err) {
@@ -78,6 +105,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem("token", data.token);
         setToken(data.token);
         setUser(data.user);
+        setProfile(null);
         return data;
       }
     } catch (err) {
@@ -90,10 +118,26 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const refreshProfile = async () => {
+    try {
+      const userRes = await apiGetCurrentUser();
+      if (userRes.success) {
+        setUser(userRes.user);
+      }
+      const profileRes = await apiGetProfile();
+      if (profileRes.success) {
+        setProfile(profileRes.profile);
+      }
+    } catch (err) {
+      console.error("Refresh profile error:", err);
+    }
+  };
+
   const logout = useCallback(() => {
     localStorage.removeItem("token");
     setToken(null);
     setUser(null);
+    setProfile(null);
     setError(null);
   }, []);
 
@@ -101,8 +145,10 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    profile,
     token,
     isAuthenticated: !!token && !!user,
+    onboardingCompleted: !!user?.onboardingCompleted,
     loading,
     error,
     login,
@@ -110,6 +156,8 @@ export const AuthProvider = ({ children }) => {
     logout,
     clearError,
     checkAuthStatus,
+    refreshProfile,
+    setProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

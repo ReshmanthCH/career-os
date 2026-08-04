@@ -1,23 +1,43 @@
-import { useNavigate } from "react";
+import { useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 
 function Navbar({ onToggleSidebar }) {
-  const { user, logout } = useAuth();
+  let user = null;
+  let logout = () => {};
+
+  try {
+    const auth = useAuth();
+    user = auth?.user || null;
+    logout = auth?.logout || (() => {});
+  } catch (err) {
+    console.error("Navbar auth context error:", err);
+  }
+
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();
+    try {
+      logout();
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
     navigate("/login");
   };
 
   const getInitials = (name) => {
-    if (!name) return "U";
-    return name
-      .split(" ")
-      .map((part) => part[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
+    if (!name || typeof name !== "string" || !name.trim()) return "U";
+    try {
+      const parts = name.trim().split(/\s+/).filter(Boolean);
+      if (parts.length === 0) return "U";
+      return parts
+        .map((part) => (part && part[0] ? part[0] : ""))
+        .filter(Boolean)
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
+    } catch (err) {
+      return "U";
+    }
   };
 
   return (

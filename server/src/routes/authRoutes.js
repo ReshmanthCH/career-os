@@ -5,6 +5,8 @@ import {
   validateLogin,
 } from "../middleware/validateMiddleware.js";
 import {
+  sendOTP,
+  verifyOTP,
   registerUser,
   loginUser,
   getCurrentUser,
@@ -12,6 +14,8 @@ import {
 
 const router = express.Router();
 
+router.post("/send-otp", sendOTP);
+router.post("/verify-otp", verifyOTP);
 router.post("/register", validateRegister, registerUser);
 router.post("/login", validateLogin, loginUser);
 router.get("/me", protect, getCurrentUser);

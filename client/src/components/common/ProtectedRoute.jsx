@@ -3,7 +3,7 @@ import useAuth from "../../hooks/useAuth";
 import LoadingSpinner from "./LoadingSpinner";
 
 function ProtectedRoute() {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, onboardingCompleted, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -12,6 +12,10 @@ function ProtectedRoute() {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (!onboardingCompleted) {
+    return <Navigate to="/onboarding" replace />;
   }
 
   return <Outlet />;

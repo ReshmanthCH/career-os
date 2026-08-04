@@ -25,8 +25,13 @@ function Login() {
 
     try {
       setIsSubmitting(true);
-      await login({ email, password });
-      navigate(from, { replace: true });
+      const data = await login({ email, password });
+      
+      if (data?.user?.onboardingCompleted) {
+        navigate(from, { replace: true });
+      } else {
+        navigate("/onboarding", { replace: true });
+      }
     } catch (err) {
       setLocalError(err.message || "Failed to log in.");
     } finally {

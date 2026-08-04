@@ -3,14 +3,14 @@ import useAuth from "../../hooks/useAuth";
 import LoadingSpinner from "./LoadingSpinner";
 
 function PublicRoute() {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, onboardingCompleted, loading } = useAuth();
 
   if (loading) {
     return <LoadingSpinner message="Loading..." />;
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={onboardingCompleted ? "/dashboard" : "/onboarding"} replace />;
   }
 
   return <Outlet />;

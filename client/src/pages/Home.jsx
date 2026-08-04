@@ -2,7 +2,10 @@ import { Link } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
 function Home() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, onboardingCompleted, logout } = useAuth();
+
+  const targetPath = onboardingCompleted ? "/dashboard" : "/onboarding";
+  const targetLabel = onboardingCompleted ? "Go to Dashboard" : "Continue Onboarding";
 
   return (
     <div className="min-h-screen bg-slate-900 text-white flex flex-col justify-between">
@@ -19,12 +22,20 @@ function Home() {
 
         <div>
           {isAuthenticated ? (
-            <Link
-              to="/dashboard"
-              className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition shadow-lg shadow-indigo-600/30"
-            >
-              Go to Dashboard &rarr;
-            </Link>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={logout}
+                className="text-slate-300 hover:text-white font-medium text-sm transition"
+              >
+                Sign Out
+              </button>
+              <Link
+                to={targetPath}
+                className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition shadow-lg shadow-indigo-600/30"
+              >
+                {targetLabel} &rarr;
+              </Link>
+            </div>
           ) : (
             <div className="flex items-center space-x-4">
               <Link
@@ -47,7 +58,7 @@ function Home() {
       {/* Hero Section */}
       <main className="max-w-5xl mx-auto px-6 py-20 text-center flex flex-col items-center">
         <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-8">
-          <span>🚀 Phase 2 Ready</span>
+          <span>🚀 Phase 3 Active • Student Onboarding</span>
         </div>
 
         <h1 className="text-5xl sm:text-6xl font-extrabold text-white tracking-tight leading-tight max-w-4xl">
@@ -63,12 +74,20 @@ function Home() {
 
         <div className="mt-10 flex flex-col sm:flex-row items-center gap-4">
           {isAuthenticated ? (
-            <Link
-              to="/dashboard"
-              className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-base transition shadow-xl shadow-indigo-600/30"
-            >
-              Open Dashboard
-            </Link>
+            <>
+              <Link
+                to={targetPath}
+                className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-base transition shadow-xl shadow-indigo-600/30"
+              >
+                {targetLabel}
+              </Link>
+              <button
+                onClick={logout}
+                className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-base border border-slate-700 transition"
+              >
+                Sign Out
+              </button>
+            </>
           ) : (
             <>
               <Link
@@ -90,7 +109,7 @@ function Home() {
 
       {/* Footer */}
       <footer className="py-6 border-t border-slate-800 text-center text-xs text-slate-500">
-        &copy; {new Date().getFullYear()} CareerOS. Full-stack Authentication & Core System Operational.
+        &copy; {new Date().getFullYear()} CareerOS. Full-stack Authentication & Student Onboarding Operational.
       </footer>
     </div>
   );
