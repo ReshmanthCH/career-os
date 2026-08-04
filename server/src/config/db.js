@@ -8,13 +8,17 @@ const connectDB = async () => {
     return;
   }
 
+  const mongoUri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/careeros";
+
   try {
-    const mongoUri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/careeros";
-    const connection = await mongoose.connect(mongoUri);
+    const connection = await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 5000,
+    });
     isConnected = true;
     console.log(`MongoDB Connected: ${connection.connection.host}`);
   } catch (error) {
     console.error("Database Connection Failed:", error.message);
+    throw new Error(`Database connection error: ${error.message}`);
   }
 };
 
