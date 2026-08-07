@@ -56,11 +56,11 @@ function Navbar({ onToggleSidebar }) {
           </button>
           
           <div className="flex items-center space-x-2">
-            <div className="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
-              C
+            <div className="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-black text-xl shadow-md">
+              D
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
-              CareerOS
+            <span className="text-xl font-black tracking-tight bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+              Devryn
             </span>
           </div>
         </div>

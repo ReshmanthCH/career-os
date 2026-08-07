@@ -5,18 +5,18 @@ function Home() {
   const { isAuthenticated, onboardingCompleted, logout } = useAuth();
 
   const targetPath = onboardingCompleted ? "/dashboard" : "/onboarding";
-  const targetLabel = onboardingCompleted ? "Go to Dashboard" : "Continue Onboarding";
+  const targetLabel = onboardingCompleted ? "Go to Devryn Dashboard" : "Continue Onboarding";
 
   return (
     <div className="min-h-screen bg-slate-900 text-white flex flex-col justify-between">
       {/* Header / Nav */}
       <header className="px-6 py-6 max-w-7xl mx-auto w-full flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center font-bold text-2xl shadow-lg shadow-indigo-500/30">
-            C
+          <div className="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center font-black text-2xl shadow-lg shadow-indigo-500/30">
+            D
           </div>
-          <span className="text-2xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-200 bg-clip-text text-transparent">
-            CareerOS
+          <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-200 bg-clip-text text-transparent">
+            Devryn
           </span>
         </div>
 
@@ -58,18 +58,18 @@ function Home() {
       {/* Hero Section */}
       <main className="max-w-5xl mx-auto px-6 py-20 text-center flex flex-col items-center">
         <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-8">
-          <span>🚀 Phase 3 Active • Student Onboarding</span>
+          <span>⚡ Devryn • AI Software Engineering & Placement OS</span>
         </div>
 
         <h1 className="text-5xl sm:text-6xl font-extrabold text-white tracking-tight leading-tight max-w-4xl">
           Your Personal Command Center for{" "}
           <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
-            Career Acceleration
+            Software Engineering Acceleration
           </span>
         </h1>
 
         <p className="mt-6 text-lg sm:text-xl text-slate-400 max-w-2xl leading-relaxed">
-          Track job applications, manage resumes, track interview prep, and streamline your entire job search workflow in one unified system.
+          Master Data Structures & Algorithms, track multi-platform coding performance, assess ATS resume readiness, and receive tailored company interview AI roadmaps.
         </p>
 
         <div className="mt-10 flex flex-col sm:flex-row items-center gap-4">
@@ -94,7 +94,7 @@ function Home() {
                 to="/signup"
                 className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-base transition shadow-xl shadow-indigo-600/30"
               >
-                Start Free Account
+                Start Free Developer Account
               </Link>
               <Link
                 to="/login"
@@ -109,7 +109,7 @@ function Home() {
 
       {/* Footer */}
       <footer className="py-6 border-t border-slate-800 text-center text-xs text-slate-500">
-        &copy; {new Date().getFullYear()} CareerOS. Full-stack Authentication & Student Onboarding Operational.
+        &copy; {new Date().getFullYear()} Devryn. Full-Stack Software Engineering Placement Operating System.
       </footer>
     </div>
   );

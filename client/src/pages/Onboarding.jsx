@@ -26,8 +26,8 @@ function Onboarding() {
     currentYear: "3rd Year",
     graduationYear: new Date().getFullYear() + 1,
     targetRole: "Software Development Engineer (SDE)",
-    placementGoal: "Product Based Company (FAANG / Unicorns)",
-    preferredDomain: "Web Development (Full Stack / Frontend / Backend)",
+    placementGoal: "Product Based Company (FAANG / Tier-1 Tech / Unicorns)",
+    preferredDomain: "Software Engineering (DSA & Problem Solving)",
     dreamCompaniesInput: "",
     skills: {
       dsa: "Intermediate",
@@ -63,9 +63,9 @@ function Onboarding() {
     }
 
     if (step === 2) {
-      if (!formData.targetRole.trim()) return "Please enter your target role.";
-      if (!formData.placementGoal.trim()) return "Please select your placement goal.";
-      if (!formData.preferredDomain.trim()) return "Please select your preferred domain.";
+      if (!formData.targetRole.trim()) return "Please select your target engineering role.";
+      if (!formData.placementGoal.trim()) return "Please select your placement target.";
+      if (!formData.preferredDomain.trim()) return "Please select your preferred development domain.";
     }
 
     return null;

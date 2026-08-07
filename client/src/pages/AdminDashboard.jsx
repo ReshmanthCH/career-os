@@ -66,7 +66,7 @@ function AdminDashboard() {
   };
 
   const statCards = [
-    { title: "Total Users", count: stats.totalUsers, badge: "Registered Students", color: "text-indigo-600" },
+    { title: "Total Users", count: stats.totalUsers, badge: "Registered Developers", color: "text-indigo-600" },
     { title: "Active Users", count: stats.activeUsers, badge: "Onboarding Completed", color: "text-emerald-600" },
     { title: "New Users", count: stats.newUsers, badge: "Joined in Last 7 Days", color: "text-violet-600" },
     { title: "Total Companies", count: stats.totalCompanies, badge: "Hiring Benchmarks", color: "text-blue-600" },
@@ -79,10 +79,10 @@ function AdminDashboard() {
         <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center space-x-2 px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-bold uppercase tracking-wider mb-2">
-              <span>⚡ CareerOS System Administration</span>
+              <span>⚡ Devryn System Administration</span>
             </div>
-            <h1 className="text-2xl font-extrabold text-gray-900">CareerOS Admin</h1>
-            <p className="text-xs text-gray-500 mt-0.5">Overview of real-time platform statistics and registered student user profiles.</p>
+            <h1 className="text-2xl font-extrabold text-gray-900">Devryn Admin</h1>
+            <p className="text-xs text-gray-500 mt-0.5">Overview of real-time Devryn platform statistics and registered developer user profiles.</p>
           </div>
 
           <button
@@ -119,8 +119,8 @@ function AdminDashboard() {
         <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Users</h2>
-              <p className="text-xs text-gray-500">List of all student user accounts in MongoDB.</p>
+              <h2 className="text-lg font-bold text-gray-900">Devryn Users</h2>
+              <p className="text-xs text-gray-500">List of all developer user accounts in MongoDB.</p>
             </div>
 
             <div className="w-full sm:w-72">

@@ -34,10 +34,10 @@ function AdminLogin() {
       <div className="max-w-md w-full bg-white rounded-2xl p-8 border border-gray-200 shadow-xl space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-xl bg-indigo-600 text-white font-black text-xl flex items-center justify-center mx-auto shadow-md">
-            ⚡
+          <div className="w-12 h-12 rounded-xl bg-indigo-600 text-white font-black text-2xl flex items-center justify-center mx-auto shadow-md">
+            D
           </div>
-          <h1 className="text-2xl font-extrabold text-gray-900">CareerOS Admin</h1>
+          <h1 className="text-2xl font-extrabold text-gray-900">Devryn Admin</h1>
           <p className="text-xs text-gray-500">Sign in with administrator credentials to access platform statistics.</p>
         </div>
 
@@ -81,13 +81,13 @@ function AdminLogin() {
             disabled={isSubmitting}
             className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow transition disabled:opacity-50 mt-2"
           >
-            {isSubmitting ? "Authenticating..." : "Sign In to Admin Portal →"}
+            {isSubmitting ? "Authenticating..." : "Sign In to Devryn Admin →"}
           </button>
         </form>
 
         <div className="text-center pt-2 border-t border-gray-100">
           <a href="/login" className="text-[11px] font-semibold text-gray-400 hover:text-indigo-600 transition">
-            &larr; Back to CareerOS Student Login
+            &larr; Back to Devryn User Login
           </a>
         </div>
       </div>

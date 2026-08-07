@@ -10,14 +10,28 @@ function Profile() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
+  const targetRoleOptions = [
+    "Software Development Engineer (SDE)",
+    "Backend Engineer",
+    "Full Stack Engineer",
+    "Frontend Engineer",
+    "AI / ML Engineer",
+    "Systems / Infrastructure Engineer",
+    "Mobile Development Engineer (iOS / Android)",
+  ];
+
   const domainOptions = [
+    "Software Engineering (DSA & Problem Solving)",
     "Web Development (Full Stack / Frontend / Backend)",
     "Artificial Intelligence & Machine Learning",
-    "Data Science & Analytics",
-    "Cloud Computing & DevOps",
-    "Cybersecurity",
+    "Cloud & Distributed Systems Engineering",
     "Mobile App Development",
-    "Core Software Engineering",
+  ];
+
+  const placementGoalOptions = [
+    "Product Based Company (FAANG / Tier-1 Tech / Unicorns)",
+    "High Growth Tech Startup",
+    "Top Software R&D Labs",
   ];
 
   const [formData, setFormData] = useState({
@@ -26,9 +40,9 @@ function Profile() {
     branch: "",
     currentYear: "3rd Year",
     graduationYear: 2026,
-    targetRole: "",
-    placementGoal: "",
-    preferredDomain: "Web Development (Full Stack / Frontend / Backend)",
+    targetRole: "Software Development Engineer (SDE)",
+    placementGoal: "Product Based Company (FAANG / Tier-1 Tech / Unicorns)",
+    preferredDomain: "Software Engineering (DSA & Problem Solving)",
     dreamCompaniesInput: "",
     skills: {
       dsa: "Beginner",
@@ -54,9 +68,9 @@ function Profile() {
         branch: profile.branch || "",
         currentYear: profile.currentYear || "3rd Year",
         graduationYear: profile.graduationYear || 2026,
-        targetRole: profile.targetRole || "",
-        placementGoal: profile.placementGoal || "",
-        preferredDomain: profile.preferredDomain || "Web Development (Full Stack / Frontend / Backend)",
+        targetRole: profile.targetRole || "Software Development Engineer (SDE)",
+        placementGoal: profile.placementGoal || "Product Based Company (FAANG / Tier-1 Tech / Unicorns)",
+        preferredDomain: profile.preferredDomain || "Software Engineering (DSA & Problem Solving)",
         dreamCompaniesInput: Array.isArray(profile.dreamCompanies)
           ? profile.dreamCompanies.join(", ")
           : "",
@@ -122,7 +136,7 @@ function Profile() {
       await updateProfile(payload);
       await refreshProfile();
 
-      setMessage({ type: "success", text: "Profile and platform links updated successfully!" });
+      setMessage({ type: "success", text: "Devryn profile and engineering links updated successfully!" });
       setIsEditing(false);
     } catch (err) {
       console.error("Profile update failed:", err);
@@ -138,7 +152,7 @@ function Profile() {
   if (!profile && !isEditing) {
     return (
       <DashboardLayout>
-        <LoadingSpinner message="Loading profile..." />
+        <LoadingSpinner message="Loading Devryn profile..." />
       </DashboardLayout>
     );
   }
@@ -157,10 +171,10 @@ function Profile() {
               <p className="text-xs text-gray-500">{user?.email}</p>
               <div className="flex flex-wrap items-center gap-2 mt-1">
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
-                  {profile?.targetRole || "Student"}
+                  {profile?.targetRole || "Software Engineer"}
                 </span>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
-                  {profile?.preferredDomain || "Web Development"}
+                  {profile?.preferredDomain || "Software Engineering"}
                 </span>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
                   {profile?.currentYear || "Enrolled"}
@@ -192,7 +206,7 @@ function Profile() {
         {isEditing ? (
           /* Profile Edit Form */
           <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm space-y-6">
-            <h2 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-3">Edit Student Profile</h2>
+            <h2 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-3">Edit Devryn Engineering Profile</h2>
 
             {/* Academic Section */}
             <div className="space-y-4">
@@ -243,18 +257,21 @@ function Profile() {
 
             {/* Career Goals & Domain */}
             <div className="space-y-4 pt-4 border-t border-gray-100">
-              <h3 className="text-xs font-bold text-indigo-600 uppercase tracking-wider">Career Goals & Preferred Domain</h3>
+              <h3 className="text-xs font-bold text-indigo-600 uppercase tracking-wider">Engineering Role & Preferred Domain</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Target Role</label>
-                  <input
-                    type="text"
-                    required
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Target Engineering Role</label>
+                  <select
                     value={formData.targetRole}
                     onChange={(e) => handleChange("targetRole", e.target.value)}
-                    placeholder="e.g. SDE-1, Full Stack Developer"
-                    className="w-full px-3 py-2 border rounded-lg text-sm"
-                  />
+                    className="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                  >
+                    {targetRoleOptions.map((role) => (
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">Preferred Engineering Domain</label>
@@ -271,14 +288,18 @@ function Profile() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Placement Goal</label>
-                  <input
-                    type="text"
-                    required
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Placement Target</label>
+                  <select
                     value={formData.placementGoal}
                     onChange={(e) => handleChange("placementGoal", e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg text-sm"
-                  />
+                    className="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                  >
+                    {placementGoalOptions.map((goal) => (
+                      <option key={goal} value={goal}>
+                        {goal}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">Dream Companies (comma separated)</label>

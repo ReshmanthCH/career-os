@@ -173,8 +173,8 @@ function Sidebar({ isOpen, onClose }) {
           </div>
 
           <div className="p-3.5 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-100">
-            <p className="text-xs font-bold text-slate-900">CareerOS Phase 8</p>
-            <p className="text-[11px] text-indigo-600 mt-0.5">AI Career Copilot Active</p>
+            <p className="text-xs font-bold text-slate-900">Devryn Platform</p>
+            <p className="text-[11px] text-indigo-600 mt-0.5">Engineering AI Copilot Active</p>
           </div>
         </div>
       </aside>

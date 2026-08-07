@@ -1,29 +1,35 @@
 import React from "react";
 
 function CareerGoalsStep({ formData, onChange }) {
+  const targetRoleOptions = [
+    "Software Development Engineer (SDE)",
+    "Backend Engineer",
+    "Full Stack Engineer",
+    "Frontend Engineer",
+    "AI / ML Engineer",
+    "Systems / Infrastructure Engineer",
+    "Mobile Development Engineer (iOS / Android)",
+  ];
+
   const placementGoalOptions = [
-    "Product Based Company (FAANG / Unicorns)",
-    "Service Based Company",
-    "High Growth Startup",
-    "Higher Studies / Research",
-    "Other",
+    "Product Based Company (FAANG / Tier-1 Tech / Unicorns)",
+    "High Growth Tech Startup",
+    "Top Software R&D Labs",
   ];
 
   const domainOptions = [
+    "Software Engineering (DSA & Problem Solving)",
     "Web Development (Full Stack / Frontend / Backend)",
     "Artificial Intelligence & Machine Learning",
-    "Data Science & Analytics",
-    "Cloud Computing & DevOps",
-    "Cybersecurity",
+    "Cloud & Distributed Systems Engineering",
     "Mobile App Development",
-    "Core Software Engineering",
   ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-xl font-bold text-gray-900">Step 2: Career Goals & Aspirations</h3>
-        <p className="text-xs text-gray-500 mt-1">Define your career target so we can curate your roadmap.</p>
+        <h3 className="text-xl font-bold text-gray-900">Step 2: Engineering Career Goals</h3>
+        <p className="text-xs text-gray-500 mt-1">Select your target software development role and core engineering domain.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4">
@@ -32,25 +38,28 @@ function CareerGoalsStep({ formData, onChange }) {
           <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
             Target Job Role <span className="text-red-500">*</span>
           </label>
-          <input
-            type="text"
-            required
-            value={formData.targetRole}
+          <select
+            value={formData.targetRole || targetRoleOptions[0]}
             onChange={(e) => onChange("targetRole", e.target.value)}
-            placeholder="e.g. SDE-1, Full Stack Developer, Frontend Engineer, AI Engineer"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          />
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white font-medium"
+          >
+            {targetRoleOptions.map((role) => (
+              <option key={role} value={role}>
+                {role}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Placement Goal */}
         <div>
           <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-            Placement Goal <span className="text-red-500">*</span>
+            Placement Target <span className="text-red-500">*</span>
           </label>
           <select
-            value={formData.placementGoal}
+            value={formData.placementGoal || placementGoalOptions[0]}
             onChange={(e) => onChange("placementGoal", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white font-medium"
           >
             {placementGoalOptions.map((goal) => (
               <option key={goal} value={goal}>
@@ -63,12 +72,12 @@ function CareerGoalsStep({ formData, onChange }) {
         {/* Preferred Domain */}
         <div>
           <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-            Preferred Domain <span className="text-red-500">*</span>
+            Preferred Development Domain <span className="text-red-500">*</span>
           </label>
           <select
-            value={formData.preferredDomain}
+            value={formData.preferredDomain || domainOptions[0]}
             onChange={(e) => onChange("preferredDomain", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white font-medium"
           >
             {domainOptions.map((domain) => (
               <option key={domain} value={domain}>
@@ -81,13 +90,13 @@ function CareerGoalsStep({ formData, onChange }) {
         {/* Dream Companies */}
         <div>
           <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-            Dream Companies (comma separated)
+            Dream Tech Companies (comma separated)
           </label>
           <input
             type="text"
             value={formData.dreamCompaniesInput || ""}
             onChange={(e) => onChange("dreamCompaniesInput", e.target.value)}
-            placeholder="e.g. Google, Microsoft, Amazon, Atlassian, Uber"
+            placeholder="e.g. Google, Microsoft, Amazon, NVIDIA, Uber"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
           />
           <p className="text-[11px] text-gray-400 mt-1">Separate multiple companies with commas.</p>
