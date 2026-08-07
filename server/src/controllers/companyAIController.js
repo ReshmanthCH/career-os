@@ -7,11 +7,12 @@ import { AIProvider } from "../services/ai/aiProvider.js";
 
 /**
  * Deterministic Rule-Based Readiness Calculator (CareerOS Estimated Match)
+ * Strictly conforms to frontend rendering schemas (CompanyReadinessGauges, CompanyGapCard, CompanyRoadmapCard, InterviewPrepCard).
  */
 const calculateCompanyRuleBasedReadiness = (context) => {
   const { studentProfile, resumeAnalysis, dsaMetrics, targetCompany } = context;
 
-  // 1. Skill Match Calculation (0 - 100)
+  // 1. Target vs User Skills
   const targetSkills = targetCompany.relevantSkills || targetCompany.resumeExpectations?.preferredSkills || [];
   const userSkills = new Set([
     ...(resumeAnalysis?.skills || []).map((s) => s.toLowerCase()),
@@ -25,7 +26,7 @@ const calculateCompanyRuleBasedReadiness = (context) => {
 
   const skillMatchScore = targetSkills.length > 0 ? Math.min(100, Math.round((matchedSkillsCount / targetSkills.length) * 100) + 30) : 75;
 
-  // 2. DSA Readiness Calculation (0 - 100)
+  // 2. DSA Readiness
   const totalSolved = dsaMetrics?.combinedSolved || dsaMetrics?.manualSolved || 0;
   let dsaScore = 40;
   if (totalSolved >= 150) dsaScore = 90;
@@ -33,58 +34,107 @@ const calculateCompanyRuleBasedReadiness = (context) => {
   else if (totalSolved >= 50) dsaScore = 65;
   else if (totalSolved >= 20) dsaScore = 50;
 
-  // 3. CS Fundamentals Match (0 - 100)
+  // 3. Core CS Subjects
   const csScore = studentProfile.branch?.includes("Computer") || studentProfile.branch?.includes("IT") ? 85 : 70;
 
-  // 4. Technology & Project Match (0 - 100)
+  // 4. Project & Resume Fit
   const projScore = resumeAnalysis?.projects?.length >= 2 ? 85 : 60;
   const techScore = resumeAnalysis?.atsScore ? Math.min(100, resumeAnalysis.atsScore) : 70;
 
-  // Weighted CareerOS Estimated Match Score
-  const overallMatchScore = Math.min(
+  // 5. GitHub Activity
+  const githubScore = context.connectedPlatforms?.github ? 80 : 35;
+
+  // 6. Interview Readiness Average
+  const overallReadiness = Math.min(
     100,
     Math.max(
       35,
       Math.round(
-        skillMatchScore * 0.25 +
-          dsaScore * 0.3 +
+        skillMatchScore * 0.2 +
+          dsaScore * 0.25 +
           csScore * 0.15 +
           projScore * 0.15 +
-          techScore * 0.15
+          techScore * 0.15 +
+          githubScore * 0.1
       )
     )
   );
 
+  const interviewReadiness = Math.round((overallReadiness + dsaScore + csScore) / 3);
+
+  const missingSkills = targetSkills.filter((sk) => !userSkills.has(sk.toLowerCase()));
+
   return {
     companyName: targetCompany.companyName,
-    readinessScore: overallMatchScore,
-    overallScore: overallMatchScore,
-    scoreBreakdown: {
-      skillMatch: skillMatchScore,
-      dsaReadiness: dsaScore,
-      csFundamentals: csScore,
-      projectRelevance: projScore,
-      technologyMatch: techScore,
-    },
-    executiveSummary: `Based on your profile metrics (${totalSolved} DSA problems solved, ${userSkills.size} technical skills verified), you have a ${overallMatchScore}% CareerOS Estimated Match for ${targetCompany.companyName}.`,
+    overallReadiness,
+    resumeReadiness: techScore,
+    dsaReadiness: dsaScore,
+    projectReadiness: projScore,
+    githubReadiness: githubScore,
+    coreCSReadiness: csScore,
+    interviewReadiness,
+    executiveSummary: `Based on your profile metrics (${totalSolved} DSA problems solved, ${userSkills.size} technical skills verified), you have a ${overallReadiness}% CareerOS Estimated Match for ${targetCompany.companyName}.`,
     gapAnalysis: {
-      missingSkills: targetSkills.filter((sk) => !userSkills.has(sk.toLowerCase())).slice(0, 4),
-      dsaGaps: totalSolved < 100 ? ["Increase problem solving speed on Graph & Dynamic Programming topics."] : [],
-      projectGaps: projScore < 80 ? ["Add quantifiable metrics to your core project descriptions."] : [],
-    },
-    roadmap: [
-      { step: 1, title: "Target Topic Mastery", focus: `Focus on ${targetCompany.preparation?.importantTopics?.slice(0, 3).join(", ") || "DSA"}` },
-      { step: 2, title: "Company Specific Mock Tests", focus: `Practice 15+ ${targetCompany.companyName} tagged problems` },
-      { step: 3, title: "Resume Optimization", focus: `Highlight ${targetCompany.resumeExpectations?.requiredTechnologies?.join(", ") || "core stack"}` },
-    ],
-    interviewAnalysis: {
-      expectedRounds: targetCompany.interviewProcess?.technicalRounds || 3,
-      keyFocusAreas: targetCompany.preparation?.importantTopics || ["DSA", "DBMS", "OOP"],
-      predictedQuestions: [
-        `Explain memory management & concurrency models used in ${targetCompany.companyName}'s domain.`,
-        `How would you design a scalable microservice for ${targetCompany.companyName}?`,
+      missingDSATopics: targetCompany.preparation?.importantTopics?.slice(0, 3) || ["Graph Algorithms", "Dynamic Programming"],
+      missingProjects: targetCompany.resumeExpectations?.preferredProjects?.slice(0, 2) || [`Distributed Backend Project for ${targetCompany.companyName}`],
+      missingTechnologies: missingSkills.length > 0 ? missingSkills.slice(0, 3) : (targetCompany.resumeExpectations?.requiredTechnologies || ["Core Technologies"]),
+      weakAreas: totalSolved < 50 ? ["DSA Problem Solving Count (under 50 problems)", "System Design & Machine Coding Experience"] : ["Advanced Graph & DP Speed"],
+      strongAreas: [
+        "Computer Science & Engineering Core Fundamentals",
+        userSkills.size > 0 ? `Verified Technical Skills (${Array.from(userSkills).slice(0, 3).join(", ")})` : "Technical Aptitude & Problem Solving",
       ],
     },
+    roadmap: {
+      dailyTasks: [
+        {
+          day: "Day 1 (Today)",
+          tasks: [
+            `Solve 2 Medium problems on ${targetCompany.preparation?.importantTopics?.[0] || "DSA Topics"}`,
+            `Review ${targetCompany.companyName} online assessment patterns & interview rounds`,
+          ],
+        },
+        {
+          day: "Day 2 (Tomorrow)",
+          tasks: [
+            `Study ${targetCompany.preparation?.importantTopics?.[1] || "Trees & Graphs"} fundamentals`,
+            `Optimize Resume bullet points for ${targetCompany.companyName}'s preferred technologies`,
+          ],
+        },
+        {
+          day: "Day 3",
+          tasks: [
+            `Attempt 1 Hard problem on ${targetCompany.preparation?.importantTopics?.[0] || "Target Topic"}`,
+            `Practice 1 behavioral interview story using the STAR framework`,
+          ],
+        },
+      ],
+      weeklyPlan: [
+        `Week 1: Master ${targetCompany.preparation?.importantTopics?.slice(0, 2).join(" & ") || "Core DSA"} for ${targetCompany.companyName} technical rounds`,
+        `Week 2: Deep dive into System Design & ${targetCompany.companyName} tagged problems`,
+        `Week 3: Conduct mock technical interviews & refine project architecture descriptions`,
+      ],
+      monthlyPlan: `Reach 80%+ benchmark readiness for ${targetCompany.companyName} by solving 25+ additional Medium/Hard problems and polishing technical projects.`,
+      estimatedTimeline: "Ready in 3-4 weeks of focused preparation",
+    },
+    interviewAnalysis: {
+      expectedDifficulty: `${targetCompany.difficultyLevel || "Hard"} Tier`,
+      likelyDSATopics: targetCompany.preparation?.importantTopics || ["Arrays & Hashing", "Trees", "BFS/DFS Graphs", "Dynamic Programming"],
+      likelyResumeQuestions: [
+        `Walk me through the architecture and technical trade-offs of your primary project.`,
+        `How did you optimize API latency, database queries, or state management in your application?`,
+      ],
+      likelyBehavioralQuestions: [
+        `Tell me about a challenging technical bug you resolved under a tight deadline.`,
+        `How do you handle technical disagreements or scope changes when working in a team?`,
+      ],
+    },
+    recommendations: [
+      {
+        title: `Build ${targetCompany.companyName} Specific Project`,
+        type: "priority",
+        message: `Add a project utilizing ${targetCompany.resumeExpectations?.requiredTechnologies?.join(", ") || "target tech stack"} to align with ${targetCompany.companyName}'s recruiter expectations.`,
+      },
+    ],
   };
 };
 
@@ -112,12 +162,20 @@ export const analyzeCompanyReadiness = async (req, res, next) => {
     try {
       const prompt = buildCompanyReadinessPrompt(context);
       const rawAnalysis = await AIProvider.generateJSON(prompt);
-      if (rawAnalysis && typeof rawAnalysis === "object" && rawAnalysis.overallScore !== undefined) {
+      if (rawAnalysis && typeof rawAnalysis === "object") {
         finalAnalysis = {
           ...ruleBasedResult,
           ...rawAnalysis,
-          overallScore: rawAnalysis.overallScore || ruleBasedResult.overallScore,
-          readinessScore: rawAnalysis.overallScore || ruleBasedResult.overallScore,
+          overallReadiness: rawAnalysis.overallReadiness || rawAnalysis.overallScore || ruleBasedResult.overallReadiness,
+          resumeReadiness: rawAnalysis.resumeReadiness || ruleBasedResult.resumeReadiness,
+          dsaReadiness: rawAnalysis.dsaReadiness || ruleBasedResult.dsaReadiness,
+          projectReadiness: rawAnalysis.projectReadiness || ruleBasedResult.projectReadiness,
+          githubReadiness: rawAnalysis.githubReadiness || ruleBasedResult.githubReadiness,
+          coreCSReadiness: rawAnalysis.coreCSReadiness || ruleBasedResult.coreCSReadiness,
+          interviewReadiness: rawAnalysis.interviewReadiness || ruleBasedResult.interviewReadiness,
+          gapAnalysis: rawAnalysis.gapAnalysis ? { ...ruleBasedResult.gapAnalysis, ...rawAnalysis.gapAnalysis } : ruleBasedResult.gapAnalysis,
+          roadmap: rawAnalysis.roadmap ? { ...ruleBasedResult.roadmap, ...rawAnalysis.roadmap } : ruleBasedResult.roadmap,
+          interviewAnalysis: rawAnalysis.interviewAnalysis ? { ...ruleBasedResult.interviewAnalysis, ...rawAnalysis.interviewAnalysis } : ruleBasedResult.interviewAnalysis,
         };
       }
     } catch (aiErr) {
@@ -138,7 +196,7 @@ export const analyzeCompanyReadiness = async (req, res, next) => {
       report.markModified("gapAnalysis");
       report.markModified("roadmap");
       report.markModified("interviewAnalysis");
-      report.markModified("scoreBreakdown");
+      report.markModified("recommendations");
       report.updatedAt = new Date();
     }
 
