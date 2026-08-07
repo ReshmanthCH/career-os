@@ -1,14 +1,16 @@
 import Profile from "../models/Profile.js";
 import { extractTextFromFile } from "../utils/textExtractor.js";
+import { extractUrlsFromText } from "../utils/urlExtractor.js";
 import { buildResumeAnalysisPrompt } from "../prompts/resumePrompt.js";
 import { callGeminiAPI } from "./geminiService.js";
 import { analyzeResumeContent } from "./resumeAnalysisService.js";
 
 /**
  * Executes AI resume analysis with Gemini and fallback to rule-based analysis if AI is unavailable.
+ * Deterministically parses LinkedIn & GitHub URLs from resume text and enriches profile data.
  */
 export const runResumeAIAnalysis = async (userId, resumeDoc) => {
-  const profile = (await Profile.findOne({ user: userId })) || {};
+  const profile = (await Profile.findOne({ user: userId })) || new Profile({ user: userId });
 
   let extractedText = "";
   try {
@@ -16,6 +18,34 @@ export const runResumeAIAnalysis = async (userId, resumeDoc) => {
   } catch (extractErr) {
     console.error("Text extraction warning:", extractErr.message);
   }
+
+  // Deterministically extract LinkedIn and GitHub URLs from extracted resume text
+  const detectedUrls = extractUrlsFromText(extractedText);
+
+  // Auto-populate profile links if missing or detected from resume
+  let profileUpdated = false;
+  if (!profile.links) profile.links = {};
+
+  if (detectedUrls.linkedin && !profile.links.linkedin) {
+    profile.links.linkedin = detectedUrls.linkedin;
+    profileUpdated = true;
+  }
+  if (detectedUrls.github && !profile.links.github) {
+    profile.links.github = detectedUrls.github;
+    profileUpdated = true;
+  }
+
+  if (profileUpdated && profile.save) {
+    try {
+      await profile.save();
+    } catch (saveErr) {
+      console.warn("Profile auto-link save notice:", saveErr.message);
+    }
+  }
+
+  // Combine profile links + detected URLs
+  const effectiveLinkedIn = profile.links?.linkedin || detectedUrls.linkedin || "";
+  const effectiveGitHub = profile.links?.github || detectedUrls.github || "";
 
   // Attempt Gemini AI Analysis
   if (extractedText && extractedText.length > 20) {
@@ -45,6 +75,10 @@ export const runResumeAIAnalysis = async (userId, resumeDoc) => {
         improvedProjects: Array.isArray(aiResult.improvedProjectDescriptions) ? aiResult.improvedProjectDescriptions : [],
         recruiterImpression: aiResult.recruiterImpression || "Strong technical foundation with high potential for product-based roles.",
         nextSteps: Array.isArray(aiResult.nextSteps) ? aiResult.nextSteps : [],
+        extractedLinks: {
+          linkedin: effectiveLinkedIn,
+          github: effectiveGitHub,
+        },
         analysisVersion: "ai-v1",
         lastAnalyzed: new Date(),
       };
@@ -53,11 +87,15 @@ export const runResumeAIAnalysis = async (userId, resumeDoc) => {
 
   // Fallback to Rule-Based Analysis if Gemini fails or API key is missing
   console.log("Using Rule-Based Analysis fallback.");
-  const ruleBased = await analyzeResumeContent(userId, {
-    originalname: resumeDoc.originalName,
-    mimetype: resumeDoc.fileType === "docx" ? "application/docx" : "application/pdf",
-    size: resumeDoc.fileSize,
-  });
+  const ruleBased = await analyzeResumeContent(
+    userId,
+    {
+      originalname: resumeDoc.originalName,
+      mimetype: resumeDoc.fileType === "docx" ? "application/docx" : "application/pdf",
+      size: resumeDoc.fileSize,
+    },
+    detectedUrls
+  );
 
   return {
     score: ruleBased.score,
@@ -66,8 +104,9 @@ export const runResumeAIAnalysis = async (userId, resumeDoc) => {
     strengths: ruleBased.strengths,
     weaknesses: [
       "Missing quantifiable metrics in project bullet points.",
-      "LinkedIn or GitHub links could be enhanced.",
-    ],
+      !effectiveLinkedIn ? "LinkedIn URL not detected in resume header." : "LinkedIn profile found.",
+      !effectiveGitHub ? "GitHub portfolio link not detected." : "GitHub profile verified.",
+    ].filter(Boolean),
     improvements: ruleBased.improvements,
     missingSections: ruleBased.formattingChecks?.emptySections || [],
     projectSuggestions: [
@@ -95,9 +134,14 @@ export const runResumeAIAnalysis = async (userId, resumeDoc) => {
     ],
     recruiterImpression: "Well-structured candidate profile ready for technical interview preparation.",
     nextSteps: [
-      "Add GitHub & LinkedIn links to header.",
+      !effectiveLinkedIn && "Add LinkedIn link to header.",
+      !effectiveGitHub && "Add GitHub profile link to header.",
       "Incorporate metric-driven bullet points for top projects.",
-    ],
+    ].filter(Boolean),
+    extractedLinks: {
+      linkedin: effectiveLinkedIn,
+      github: effectiveGitHub,
+    },
     sectionAnalysis: ruleBased.sectionAnalysis,
     skillAnalysis: ruleBased.skillAnalysis,
     projectAnalysis: ruleBased.projectAnalysis,

@@ -3,9 +3,8 @@ import User from "../models/User.js";
 
 /**
  * Analyzes resume file and student profile information to generate a rule-based resume report.
- * Designed to be easily replaced by AI (Gemini/OpenAI) in future phases.
  */
-export const analyzeResumeContent = async (userId, fileData) => {
+export const analyzeResumeContent = async (userId, fileData, detectedUrls = {}) => {
   // Fetch user profile to enrich analysis
   const profile = await Profile.findOne({ user: userId });
   const user = await User.findById(userId);
@@ -14,10 +13,14 @@ export const analyzeResumeContent = async (userId, fileData) => {
   const fileType = fileData.mimetype?.includes("word") ? "docx" : "pdf";
   const fileSize = fileData.size || 0;
 
-  // Rule-based contact detection (based on profile links + file attributes)
+  // Rule-based contact detection (combining profile links + detected URLs in file)
   const hasEmail = Boolean(user?.email);
-  const hasLinkedIn = Boolean(profile?.links?.linkedin && profile.links.linkedin.trim());
-  const hasGitHub = Boolean(profile?.links?.github && profile.links.github.trim());
+  const hasLinkedIn = Boolean(
+    (profile?.links?.linkedin && profile.links.linkedin.trim()) || detectedUrls?.linkedin
+  );
+  const hasGitHub = Boolean(
+    (profile?.links?.github && profile.links.github.trim()) || detectedUrls?.github
+  );
   const hasPhone = Boolean(profile?.phone || true); // Default true for basic check
 
   // Rule-based section detection
