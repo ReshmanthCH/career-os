@@ -10,6 +10,16 @@ function Profile() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
+  const domainOptions = [
+    "Web Development (Full Stack / Frontend / Backend)",
+    "Artificial Intelligence & Machine Learning",
+    "Data Science & Analytics",
+    "Cloud Computing & DevOps",
+    "Cybersecurity",
+    "Mobile App Development",
+    "Core Software Engineering",
+  ];
+
   const [formData, setFormData] = useState({
     college: "",
     degree: "",
@@ -18,7 +28,7 @@ function Profile() {
     graduationYear: 2026,
     targetRole: "",
     placementGoal: "",
-    preferredDomain: "",
+    preferredDomain: "Web Development (Full Stack / Frontend / Backend)",
     dreamCompaniesInput: "",
     skills: {
       dsa: "Beginner",
@@ -46,7 +56,7 @@ function Profile() {
         graduationYear: profile.graduationYear || 2026,
         targetRole: profile.targetRole || "",
         placementGoal: profile.placementGoal || "",
-        preferredDomain: profile.preferredDomain || "",
+        preferredDomain: profile.preferredDomain || "Web Development (Full Stack / Frontend / Backend)",
         dreamCompaniesInput: Array.isArray(profile.dreamCompanies)
           ? profile.dreamCompanies.join(", ")
           : "",
@@ -72,6 +82,16 @@ function Profile() {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
+    }));
+  };
+
+  const handleLinkChange = (key, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      links: {
+        ...(prev.links || {}),
+        [key]: value,
+      },
     }));
   };
 
@@ -102,7 +122,7 @@ function Profile() {
       await updateProfile(payload);
       await refreshProfile();
 
-      setMessage({ type: "success", text: "Profile updated successfully!" });
+      setMessage({ type: "success", text: "Profile and platform links updated successfully!" });
       setIsEditing(false);
     } catch (err) {
       console.error("Profile update failed:", err);
@@ -135,11 +155,14 @@ function Profile() {
             <div>
               <h1 className="text-2xl font-extrabold text-gray-900">{user?.name}</h1>
               <p className="text-xs text-gray-500">{user?.email}</p>
-              <div className="flex items-center space-x-2 mt-1">
+              <div className="flex flex-wrap items-center gap-2 mt-1">
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
                   {profile?.targetRole || "Student"}
                 </span>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                  {profile?.preferredDomain || "Web Development"}
+                </span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
                   {profile?.currentYear || "Enrolled"}
                 </span>
               </div>
@@ -218,9 +241,9 @@ function Profile() {
               </div>
             </div>
 
-            {/* Career Goals */}
+            {/* Career Goals & Domain */}
             <div className="space-y-4 pt-4 border-t border-gray-100">
-              <h3 className="text-xs font-bold text-indigo-600 uppercase tracking-wider">Career Goals</h3>
+              <h3 className="text-xs font-bold text-indigo-600 uppercase tracking-wider">Career Goals & Preferred Domain</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">Target Role</label>
@@ -229,8 +252,23 @@ function Profile() {
                     required
                     value={formData.targetRole}
                     onChange={(e) => handleChange("targetRole", e.target.value)}
+                    placeholder="e.g. SDE-1, Full Stack Developer"
                     className="w-full px-3 py-2 border rounded-lg text-sm"
                   />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Preferred Engineering Domain</label>
+                  <select
+                    value={formData.preferredDomain}
+                    onChange={(e) => handleChange("preferredDomain", e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                  >
+                    {domainOptions.map((dom) => (
+                      <option key={dom} value={dom}>
+                        {dom}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">Placement Goal</label>
@@ -242,12 +280,70 @@ function Profile() {
                     className="w-full px-3 py-2 border rounded-lg text-sm"
                   />
                 </div>
-                <div className="sm:col-span-2">
+                <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">Dream Companies (comma separated)</label>
                   <input
                     type="text"
                     value={formData.dreamCompaniesInput}
                     onChange={(e) => handleChange("dreamCompaniesInput", e.target.value)}
+                    placeholder="e.g. Google, Microsoft, Amazon"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Coding & Social Links */}
+            <div className="space-y-4 pt-4 border-t border-gray-100">
+              <h3 className="text-xs font-bold text-indigo-600 uppercase tracking-wider">Coding & Social Links</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">GitHub Profile / Username</label>
+                  <input
+                    type="text"
+                    value={formData.links.github || ""}
+                    onChange={(e) => handleLinkChange("github", e.target.value)}
+                    placeholder="e.g. https://github.com/username or username"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">LinkedIn Profile URL</label>
+                  <input
+                    type="text"
+                    value={formData.links.linkedin || ""}
+                    onChange={(e) => handleLinkChange("linkedin", e.target.value)}
+                    placeholder="e.g. https://linkedin.com/in/username"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">LeetCode Profile / Username</label>
+                  <input
+                    type="text"
+                    value={formData.links.leetCode || ""}
+                    onChange={(e) => handleLinkChange("leetCode", e.target.value)}
+                    placeholder="e.g. https://leetcode.com/u/username or username"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Codeforces Username</label>
+                  <input
+                    type="text"
+                    value={formData.links.codeforces || ""}
+                    onChange={(e) => handleLinkChange("codeforces", e.target.value)}
+                    placeholder="e.g. tourist or https://codeforces.com/profile/tourist"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">CodeChef Profile / Username</label>
+                  <input
+                    type="text"
+                    value={formData.links.codeChef || ""}
+                    onChange={(e) => handleLinkChange("codeChef", e.target.value)}
+                    placeholder="e.g. https://www.codechef.com/users/username or username"
                     className="w-full px-3 py-2 border rounded-lg text-sm"
                   />
                 </div>
@@ -292,7 +388,7 @@ function Profile() {
               <div className="text-xs space-y-2 text-gray-700">
                 <div><span className="text-gray-500 font-medium">Target Role:</span> {profile?.targetRole}</div>
                 <div><span className="text-gray-500 font-medium">Placement Goal:</span> {profile?.placementGoal}</div>
-                <div><span className="text-gray-500 font-medium">Domain:</span> {profile?.preferredDomain}</div>
+                <div><span className="text-gray-500 font-medium">Preferred Domain:</span> {profile?.preferredDomain}</div>
                 <div>
                   <span className="text-gray-500 font-medium">Dream Companies:</span>{" "}
                   {profile?.dreamCompanies?.length > 0 ? profile.dreamCompanies.join(", ") : "None listed"}
