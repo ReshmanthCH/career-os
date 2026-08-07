@@ -17,11 +17,14 @@ import CompanyCompare from "../pages/CompanyCompare";
 import CompanyBookmarks from "../pages/CompanyBookmarks";
 import CompanyAIMentor from "../pages/CompanyAIMentor";
 import AICareerCopilot from "../pages/AICareerCopilot";
+import AdminLogin from "../pages/AdminLogin";
+import AdminDashboard from "../pages/AdminDashboard";
 import NotFound from "../pages/NotFound";
 
 import ProtectedRoute from "../components/common/ProtectedRoute";
 import PublicRoute from "../components/common/PublicRoute";
 import OnboardingRoute from "../components/common/OnboardingRoute";
+import AdminRoute from "../components/common/AdminRoute";
 
 function AppRouter() {
   return (
@@ -35,12 +38,20 @@ function AppRouter() {
         <Route path="/signup" element={<Signup />} />
       </Route>
 
+      {/* Admin Login Route */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+
+      {/* Protected Admin Routes */}
+      <Route element={<AdminRoute />}>
+        <Route path="/admin" element={<AdminDashboard />} />
+      </Route>
+
       {/* Onboarding Route (Requires Auth, blocks if already completed) */}
       <Route element={<OnboardingRoute />}>
         <Route path="/onboarding" element={<Onboarding />} />
       </Route>
 
-      {/* Protected Routes (Require Auth & Onboarding Completion) */}
+      {/* Protected Student Routes (Require Auth & Onboarding Completion) */}
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
