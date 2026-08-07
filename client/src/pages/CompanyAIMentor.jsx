@@ -45,7 +45,7 @@ function CompanyAIMentor() {
       if (histRes.success) setHistory(histRes.history || []);
     } catch (err) {
       console.error("Fetch company AI data error:", err);
-      setError("Failed to load company AI advisor data.");
+      setError("Failed to load target companies for AI evaluation.");
     } finally {
       setLoading(false);
     }
@@ -110,24 +110,30 @@ function CompanyAIMentor() {
           </div>
 
           <div className="flex items-center space-x-3 w-full sm:w-auto">
-            <select
-              value={selectedCompanyId}
-              onChange={handleCompanyChange}
-              className="px-3 py-2.5 border border-gray-300 rounded-xl text-xs font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
-            >
-              {companies.map((c) => (
-                <option key={c._id} value={c._id}>
-                  {c.logo} {c.companyName}
-                </option>
-              ))}
-            </select>
+            {companies.length > 0 ? (
+              <select
+                value={selectedCompanyId}
+                onChange={handleCompanyChange}
+                className="px-3 py-2.5 border border-gray-300 rounded-xl text-xs font-bold focus:ring-2 focus:ring-indigo-500 outline-none max-w-xs"
+              >
+                {companies.map((c) => (
+                  <option key={c._id} value={c._id}>
+                    {c.logo} {c.companyName} ({c.category || c.industry})
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <div className="px-3 py-2 border border-amber-200 bg-amber-50 rounded-xl text-xs font-semibold text-amber-800">
+                Loading target companies...
+              </div>
+            )}
 
             <button
               onClick={handleRunAnalysis}
               disabled={isAnalyzing || !selectedCompanyId}
               className="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-semibold text-xs rounded-xl shadow transition disabled:opacity-50 whitespace-nowrap"
             >
-              {isAnalyzing ? "🧠 Analyzing..." : "✨ Evaluate Match"}
+              {isAnalyzing ? "🧠 Evaluating..." : "✨ Evaluate Match"}
             </button>
           </div>
         </div>
@@ -148,23 +154,23 @@ function CompanyAIMentor() {
         {loading ? (
           <div className="bg-white rounded-2xl p-12 border border-gray-200 text-center space-y-3">
             <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="text-xs font-semibold text-gray-700">Analyzing company profile and student context...</p>
+            <p className="text-xs font-semibold text-gray-700">Analyzing target company profile and student context...</p>
           </div>
         ) : !report ? (
           <div className="bg-white rounded-2xl p-10 border border-gray-200 text-center space-y-4 shadow-sm max-w-lg mx-auto">
             <span className="text-4xl block">🏢</span>
             <h3 className="text-lg font-bold text-gray-900">
-              No AI Evaluation for {selectedCompany?.companyName || "Selected Company"}
+              Select a target company to begin your CareerOS hiring evaluation
             </h3>
             <p className="text-xs text-gray-500">
-              Click **"Evaluate Match"** above to run Gemini AI reasoning across your profile, resume metrics, DSA progress, and {selectedCompany?.companyName}'s hiring requirements.
+              Select **{selectedCompany?.companyName || "a company"}** from the dropdown above and click **"Evaluate Match"** to run career evaluation across your skills, resume metrics, DSA progress, and target hiring requirements.
             </p>
             <button
               onClick={handleRunAnalysis}
-              disabled={isAnalyzing}
-              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow transition"
+              disabled={isAnalyzing || !selectedCompanyId}
+              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow transition disabled:opacity-50"
             >
-              Generate AI Hiring Evaluation
+              Evaluate Match for {selectedCompany?.companyName || "Target Company"}
             </button>
           </div>
         ) : (
@@ -176,7 +182,7 @@ function CompanyAIMentor() {
                   <span>✨ Recruiter Assessment for {report.companyName}</span>
                 </h3>
                 <span className="px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-sm">
-                  Gemini AI Evaluated
+                  CareerOS Estimated Match ({report.overallScore || report.readinessScore || 75}%)
                 </span>
               </div>
               <p className="text-xs sm:text-sm font-medium leading-relaxed text-gray-700 bg-indigo-50/40 p-4 rounded-xl border border-indigo-100/80">

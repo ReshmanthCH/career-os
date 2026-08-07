@@ -18,15 +18,18 @@ function CompanyList() {
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
-  const [filters, setFilters] = useState({
+  const initialFilters = {
     search: "",
+    category: "All",
     industry: "All",
     hiringStatus: "All",
     difficultyLevel: "All",
     internshipAvailable: "All",
     fullTimeAvailable: "All",
     sortBy: "name",
-  });
+  };
+
+  const [filters, setFilters] = useState(initialFilters);
 
   const fetchCompaniesData = async () => {
     try {
@@ -38,7 +41,7 @@ function CompanyList() {
       }
     } catch (err) {
       console.error("Fetch companies error:", err);
-      setError("Failed to load company intelligence profiles.");
+      setError("Unable to load target companies. Please verify your backend server.");
     } finally {
       setLoading(false);
     }
@@ -50,6 +53,10 @@ function CompanyList() {
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleResetFilters = () => {
+    setFilters(initialFilters);
   };
 
   const handleToggleBookmark = async (companyId, isCurrentlyBookmarked) => {
@@ -98,11 +105,11 @@ function CompanyList() {
         <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center space-x-2 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 text-[10px] font-bold uppercase tracking-wider mb-2">
-              <span>🏢 Phase 7A Active • Target Company Database</span>
+              <span>🏢 Phase 7A Active • Target Company Database ({companies.length} Loaded)</span>
             </div>
             <h1 className="text-2xl font-extrabold text-gray-900">Company Intelligence</h1>
             <p className="text-xs text-gray-500 mt-1">
-              Explore 22+ top product & tech companies, interview round structures, salary benchmarks, and core topic weightages.
+              Explore 50+ top Product, FinTech, Banking, IT Service, Startup & Automotive companies with verified interview benchmarks.
             </p>
           </div>
 
@@ -118,8 +125,9 @@ function CompanyList() {
 
         {/* Notifications */}
         {error && (
-          <div className="p-4 bg-red-50 border border-red-200 text-red-800 text-xs font-semibold rounded-xl">
-            {error}
+          <div className="p-4 bg-red-50 border border-red-200 text-red-800 text-xs font-semibold rounded-xl flex items-center justify-between">
+            <span>{error}</span>
+            <button onClick={fetchCompaniesData} className="underline font-bold">Retry</button>
           </div>
         )}
 
@@ -145,9 +153,16 @@ function CompanyList() {
             <p className="text-xs font-semibold text-gray-700">Loading company profiles & hiring benchmarks...</p>
           </div>
         ) : companies.length === 0 ? (
-          <div className="bg-white rounded-2xl p-12 border border-gray-200 text-center space-y-2">
+          <div className="bg-white rounded-2xl p-12 border border-gray-200 text-center space-y-3">
+            <span className="text-3xl block">🔍</span>
             <p className="text-sm font-bold text-gray-800">No matching target companies found.</p>
             <p className="text-xs text-gray-400">Try adjusting your search criteria or resetting filters.</p>
+            <button
+              onClick={handleResetFilters}
+              className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs rounded-xl border border-indigo-200 transition"
+            >
+              Reset Filters
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

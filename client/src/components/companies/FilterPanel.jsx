@@ -8,7 +8,7 @@ function FilterPanel({ filters, onFilterChange, totalCount, selectedCountForComp
         <div className="flex-1">
           <input
             type="text"
-            placeholder="🔍 Search target companies (e.g. Google, Amazon, Oracle)..."
+            placeholder="🔍 Search target companies, roles, skills (e.g. Google, FinTech, Java, Ford)..."
             value={filters.search}
             onChange={(e) => onFilterChange("search", e.target.value)}
             className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium"
@@ -16,7 +16,21 @@ function FilterPanel({ filters, onFilterChange, totalCount, selectedCountForComp
         </div>
 
         {/* Filter Dropdowns */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+          <select
+            value={filters.category || "All"}
+            onChange={(e) => onFilterChange("category", e.target.value)}
+            className="px-2.5 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-semibold text-gray-700 col-span-2 sm:col-span-1"
+          >
+            <option value="All">Category: All</option>
+            <option value="Product / Technology">Product / Technology</option>
+            <option value="Service / IT">Service / IT</option>
+            <option value="FinTech / Payments">FinTech / Payments</option>
+            <option value="Banking / Financial Services">Banking / Financial Services</option>
+            <option value="Startups / Scaleups">Startups / Scaleups</option>
+            <option value="Automotive">Automotive</option>
+          </select>
+
           <select
             value={filters.hiringStatus}
             onChange={(e) => onFilterChange("hiringStatus", e.target.value)}

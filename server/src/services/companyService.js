@@ -1,18 +1,44 @@
 import Company from "../models/Company.js";
 import CompanyBookmark from "../models/CompanyBookmark.js";
+import { seedCompaniesAuto } from "../seed/seedCompanies.js";
+
+/**
+ * Ensures company database is automatically seeded if empty.
+ */
+const ensureCompaniesSeeded = async () => {
+  const count = await Company.countDocuments();
+  if (count === 0) {
+    console.log("🌱 Company database is empty. Auto-seeding 50+ real company records...");
+    await seedCompaniesAuto();
+  }
+};
 
 /**
  * Service to retrieve companies list with search, filtering, and user bookmark status.
  */
-export const getCompaniesList = async (queryParams, userId) => {
-  const { search, industry, hiringStatus, internshipAvailable, fullTimeAvailable, difficultyLevel, sortBy } = queryParams;
+export const getCompaniesList = async (queryParams = {}, userId) => {
+  await ensureCompaniesSeeded();
+
+  const { search, category, industry, hiringStatus, internshipAvailable, fullTimeAvailable, difficultyLevel, sortBy } = queryParams;
 
   const filter = {};
 
+  // Clean filter query parameters
   if (search && search.trim()) {
-    filter.companyName = { $regex: search.trim(), $options: "i" };
+    const searchRegex = new RegExp(search.trim(), "i");
+    filter.$or = [
+      { companyName: searchRegex },
+      { industry: searchRegex },
+      { category: searchRegex },
+      { companyType: searchRegex },
+      { commonRoles: searchRegex },
+      { engineeringRoles: searchRegex },
+      { relevantSkills: searchRegex },
+      { "preparation.importantTopics": searchRegex },
+    ];
   }
 
+  if (category && category !== "All") filter.category = category;
   if (industry && industry !== "All") filter.industry = industry;
   if (hiringStatus && hiringStatus !== "All") filter.hiringStatus = hiringStatus;
   if (difficultyLevel && difficultyLevel !== "All") filter.difficultyLevel = difficultyLevel;
@@ -45,12 +71,21 @@ export const getCompaniesList = async (queryParams, userId) => {
  * Service to retrieve a single company by ID with user bookmark status.
  */
 export const getCompanyDetails = async (id, userId) => {
-  const company = await Company.findById(id);
+  await ensureCompaniesSeeded();
+
+  let company = null;
+  // Support lookup by ObjectId or slug
+  if (id.match(/^[0-9a-fA-F]{24}$/)) {
+    company = await Company.findById(id);
+  } else {
+    company = await Company.findOne({ slug: id.toLowerCase() });
+  }
+
   if (!company) return null;
 
   let isBookmarked = false;
   if (userId) {
-    const bookmark = await CompanyBookmark.findOne({ user: userId, company: id });
+    const bookmark = await CompanyBookmark.findOne({ user: userId, company: company._id });
     isBookmarked = !!bookmark;
   }
 
