@@ -8,12 +8,24 @@ const apiClient = axios.create({
   },
 });
 
-// Request interceptor: Attach JWT token if present
+// Request interceptor: Attach appropriate JWT token
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const adminToken = localStorage.getItem("adminToken");
+    const userToken = localStorage.getItem("token");
+
+    // If calling admin APIs (/admin/...), prioritize adminToken
+    if (config.url && (config.url.includes("/admin") || config.url.startsWith("admin"))) {
+      if (adminToken) {
+        config.headers.Authorization = `Bearer ${adminToken}`;
+      } else if (userToken) {
+        config.headers.Authorization = `Bearer ${userToken}`;
+      }
+    } else {
+      // Standard student API routes
+      if (userToken) {
+        config.headers.Authorization = `Bearer ${userToken}`;
+      }
     }
     return config;
   },
@@ -27,7 +39,10 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem("token");
+      // If student endpoint failed 401, clear student token
+      if (error.config && !error.config.url?.includes("/admin")) {
+        localStorage.removeItem("token");
+      }
     }
     return Promise.reject(error);
   }
