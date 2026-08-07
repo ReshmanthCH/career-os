@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import { verifyToken } from "../utils/jwt.js";
+import mongoose from "mongoose";
 
 export const protectAdmin = async (req, res, next) => {
   try {
@@ -22,29 +23,37 @@ export const protectAdmin = async (req, res, next) => {
       });
     }
 
-    // Check if token is for system admin account
     const systemAdminEmail = process.env.ADMIN_EMAIL || "admin@careeros.com";
-    if (decoded.role === "admin" || decoded.email === systemAdminEmail) {
+
+    // 1. Check if token belongs to system administrator
+    if (
+      decoded.role === "admin" ||
+      decoded.id === "system-admin-id" ||
+      (decoded.email && decoded.email.toLowerCase() === systemAdminEmail.toLowerCase())
+    ) {
       req.admin = {
-        id: decoded.id,
+        id: decoded.id || "system-admin-id",
         email: decoded.email || systemAdminEmail,
         role: "admin",
       };
       return next();
     }
 
-    // Fallback DB lookup for admin role
-    const user = await User.findById(decoded.id).select("-password");
-    if (!user || user.role !== "admin") {
-      return res.status(403).json({
-        success: false,
-        message: "Access forbidden. Admin privileges required.",
-      });
+    // 2. Safely check MongoDB User collection for admin role
+    if (mongoose.Types.ObjectId.isValid(decoded.id)) {
+      const user = await User.findById(decoded.id).select("-password");
+      if (user && user.role === "admin") {
+        req.admin = user;
+        return next();
+      }
     }
 
-    req.admin = user;
-    next();
+    return res.status(403).json({
+      success: false,
+      message: "Access forbidden. Admin privileges required.",
+    });
   } catch (error) {
+    console.error("Admin middleware auth error:", error);
     return res.status(401).json({
       success: false,
       message: "Invalid or expired admin token.",

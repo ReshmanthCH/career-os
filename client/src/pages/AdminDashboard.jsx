@@ -24,13 +24,19 @@ function AdminDashboard() {
   const fetchStats = async () => {
     try {
       setLoadingStats(true);
+      setError("");
       const res = await getAdminStats();
       if (res.success) {
         setStats(res.stats || { totalUsers: 0, activeUsers: 0, newUsers: 0, totalCompanies: 0, totalFeedbacks: 0 });
       }
     } catch (err) {
       console.error("Fetch admin stats error:", err);
-      setError("Failed to load platform statistics.");
+      const msg = err.response?.data?.message || err.message || "Failed to load platform statistics.";
+      if (err.response?.status === 401) {
+        setError("Admin session expired. Please logout and sign in again.");
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoadingStats(false);
     }
@@ -117,8 +123,11 @@ function AdminDashboard() {
         </div>
 
         {error && (
-          <div className="p-4 bg-red-50 border border-red-200 text-red-800 text-xs font-semibold rounded-xl">
-            {error}
+          <div className="p-4 bg-red-50 border border-red-200 text-red-800 text-xs font-semibold rounded-xl flex items-center justify-between">
+            <span>{error}</span>
+            <button onClick={handleLogout} className="underline text-red-900 font-bold ml-4">
+              Logout & Re-login
+            </button>
           </div>
         )}
 
