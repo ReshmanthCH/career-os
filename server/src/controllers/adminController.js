@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import Company from "../models/Company.js";
 import Profile from "../models/Profile.js";
+import Feedback from "../models/Feedback.js";
 import { generateToken } from "../utils/jwt.js";
 import bcrypt from "bcryptjs";
 
@@ -79,11 +80,12 @@ export const getAdminStats = async (req, res, next) => {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    const [totalUsers, activeUsers, newUsers, totalCompanies] = await Promise.all([
+    const [totalUsers, activeUsers, newUsers, totalCompanies, totalFeedbacks] = await Promise.all([
       User.countDocuments({ role: { $ne: "admin" } }),
       User.countDocuments({ role: { $ne: "admin" }, onboardingCompleted: true }),
       User.countDocuments({ role: { $ne: "admin" }, createdAt: { $gte: sevenDaysAgo } }),
       Company.countDocuments(),
+      Feedback.countDocuments(),
     ]);
 
     res.status(200).json({
@@ -93,6 +95,7 @@ export const getAdminStats = async (req, res, next) => {
         activeUsers,
         newUsers,
         totalCompanies,
+        totalFeedbacks,
       },
     });
   } catch (error) {
@@ -142,6 +145,23 @@ export const getAdminUsers = async (req, res, next) => {
     res.status(200).json({
       success: true,
       users: enrichedUsers,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /api/v1/admin/feedbacks
+export const getAdminFeedbacks = async (req, res, next) => {
+  try {
+    const feedbacks = await Feedback.find()
+      .populate("user", "name email")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      feedbacks,
     });
   } catch (error) {
     next(error);

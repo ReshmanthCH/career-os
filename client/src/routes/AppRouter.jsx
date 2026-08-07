@@ -17,6 +17,7 @@ import CompanyCompare from "../pages/CompanyCompare";
 import CompanyBookmarks from "../pages/CompanyBookmarks";
 import CompanyAIMentor from "../pages/CompanyAIMentor";
 import AICareerCopilot from "../pages/AICareerCopilot";
+import Feedback from "../pages/Feedback";
 import AdminLogin from "../pages/AdminLogin";
 import AdminDashboard from "../pages/AdminDashboard";
 import NotFound from "../pages/NotFound";
@@ -68,6 +69,7 @@ function AppRouter() {
         <Route path="/companies/:id" element={<CompanyDetails />} />
         <Route path="/company-ai" element={<CompanyAIMentor />} />
         <Route path="/copilot" element={<AICareerCopilot />} />
+        <Route path="/feedback" element={<Feedback />} />
       </Route>
 
       {/* 404 Catch-All Route */}

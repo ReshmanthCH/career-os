@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAdminStats, getAdminUsers } from "../services/adminService";
+import { getAdminStats, getAdminUsers, getAdminFeedbacks } from "../services/adminService";
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -10,12 +10,15 @@ function AdminDashboard() {
     activeUsers: 0,
     newUsers: 0,
     totalCompanies: 0,
+    totalFeedbacks: 0,
   });
 
   const [users, setUsers] = useState([]);
+  const [feedbacks, setFeedbacks] = useState([]);
   const [search, setSearch] = useState("");
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
+  const [loadingFeedbacks, setLoadingFeedbacks] = useState(true);
   const [error, setError] = useState("");
 
   const fetchStats = async () => {
@@ -23,7 +26,7 @@ function AdminDashboard() {
       setLoadingStats(true);
       const res = await getAdminStats();
       if (res.success) {
-        setStats(res.stats || { totalUsers: 0, activeUsers: 0, newUsers: 0, totalCompanies: 0 });
+        setStats(res.stats || { totalUsers: 0, activeUsers: 0, newUsers: 0, totalCompanies: 0, totalFeedbacks: 0 });
       }
     } catch (err) {
       console.error("Fetch admin stats error:", err);
@@ -47,8 +50,23 @@ function AdminDashboard() {
     }
   };
 
+  const fetchFeedbacks = async () => {
+    try {
+      setLoadingFeedbacks(true);
+      const res = await getAdminFeedbacks();
+      if (res.success) {
+        setFeedbacks(res.feedbacks || []);
+      }
+    } catch (err) {
+      console.error("Fetch admin feedbacks error:", err);
+    } finally {
+      setLoadingFeedbacks(false);
+    }
+  };
+
   useEffect(() => {
     fetchStats();
+    fetchFeedbacks();
   }, []);
 
   useEffect(() => {
@@ -68,9 +86,14 @@ function AdminDashboard() {
   const statCards = [
     { title: "Total Users", count: stats.totalUsers, badge: "Registered Developers", color: "text-indigo-600" },
     { title: "Active Users", count: stats.activeUsers, badge: "Onboarding Completed", color: "text-emerald-600" },
-    { title: "New Users", count: stats.newUsers, badge: "Joined in Last 7 Days", color: "text-violet-600" },
-    { title: "Total Companies", count: stats.totalCompanies, badge: "Hiring Benchmarks", color: "text-blue-600" },
+    { title: "New Users (7d)", count: stats.newUsers, badge: "Recent Signups", color: "text-violet-600" },
+    { title: "Companies", count: stats.totalCompanies, badge: "Hiring Benchmarks", color: "text-blue-600" },
+    { title: "Total Feedbacks", count: stats.totalFeedbacks ?? feedbacks.length, badge: "User Reviews", color: "text-amber-600" },
   ];
+
+  const renderStars = (count) => {
+    return "★".repeat(count) + "☆".repeat(5 - count);
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 sm:p-8 space-y-6">
@@ -82,7 +105,7 @@ function AdminDashboard() {
               <span>⚡ Devryn System Administration</span>
             </div>
             <h1 className="text-2xl font-extrabold text-gray-900">Devryn Admin</h1>
-            <p className="text-xs text-gray-500 mt-0.5">Overview of real-time Devryn platform statistics and registered developer user profiles.</p>
+            <p className="text-xs text-gray-500 mt-0.5">Overview of real-time Devryn platform statistics, registered developer users, and submitted feedback.</p>
           </div>
 
           <button
@@ -102,7 +125,7 @@ function AdminDashboard() {
         {/* Overview Stats Cards */}
         <div>
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Overview</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {statCards.map((sc) => (
               <div key={sc.title} className="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm space-y-1">
                 <p className="text-xs font-bold text-gray-500">{sc.title}</p>
@@ -113,6 +136,76 @@ function AdminDashboard() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* User Feedback Log Section */}
+        <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">User Feedback Log</h2>
+              <p className="text-xs text-gray-500">Real-time developer feedback submitted via /feedback.</p>
+            </div>
+            <span className="px-3 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded-full text-xs font-bold">
+              {feedbacks.length} Entries
+            </span>
+          </div>
+
+          {loadingFeedbacks ? (
+            <div className="py-10 text-center text-xs font-semibold text-gray-500">
+              Loading user feedback log...
+            </div>
+          ) : feedbacks.length === 0 ? (
+            <div className="py-10 text-center space-y-2">
+              <span className="text-2xl block">💬</span>
+              <p className="text-sm font-bold text-gray-800">No user feedback entries submitted yet.</p>
+              <p className="text-xs text-gray-400">Feedback submitted by users on /feedback will appear here.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-gray-200 text-gray-400 font-bold uppercase text-[10px]">
+                    <th className="py-3 px-4">Submitted By</th>
+                    <th className="py-3 px-4">Category</th>
+                    <th className="py-3 px-4">Rating</th>
+                    <th className="py-3 px-4">Subject & Message</th>
+                    <th className="py-3 px-4 text-right">Date</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 font-medium text-gray-700">
+                  {feedbacks.map((f) => (
+                    <tr key={f._id} className="hover:bg-slate-50 transition">
+                      <td className="py-3.5 px-4">
+                        <p className="font-bold text-gray-900">{f.user?.name || "Anonymous User"}</p>
+                        <p className="text-[10px] text-gray-400 font-mono">{f.user?.email || ""}</p>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                          f.category === "Bug Report"
+                            ? "bg-rose-50 text-rose-700 border border-rose-200"
+                            : f.category === "Feature Request"
+                            ? "bg-purple-50 text-purple-700 border border-purple-200"
+                            : "bg-blue-50 text-blue-700 border border-blue-200"
+                        }`}>
+                          {f.category}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span className="text-amber-500 font-bold tracking-widest">{renderStars(f.rating)}</span>
+                      </td>
+                      <td className="py-3.5 px-4 max-w-xs">
+                        <p className="font-bold text-gray-900">{f.subject}</p>
+                        <p className="text-xs text-gray-600 mt-0.5 whitespace-pre-wrap">{f.message}</p>
+                      </td>
+                      <td className="py-3.5 px-4 text-right text-gray-500 font-mono text-[11px]">
+                        {f.createdAt ? new Date(f.createdAt).toLocaleString() : "N/A"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* Users Section */}

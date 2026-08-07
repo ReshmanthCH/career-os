@@ -21,3 +21,11 @@ export const getAdminUsers = async (search = "") => {
   });
   return response.data;
 };
+
+export const getAdminFeedbacks = async () => {
+  const token = localStorage.getItem("adminToken");
+  const response = await apiClient.get("/admin/feedbacks", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};

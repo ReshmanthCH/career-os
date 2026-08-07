@@ -17,6 +17,7 @@ import companyRoutes from "./routes/companyRoutes.js";
 import companyAIRoutes from "./routes/companyAIRoutes.js";
 import copilotRoutes from "./routes/copilotRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import feedbackRoutes from "./routes/feedbackRoutes.js";
 
 import errorHandler from "./middleware/errorMiddleware.js";
 import ApiError from "./utils/ApiError.js";
@@ -54,6 +55,7 @@ app.use("/api/v1/companies", companyRoutes);
 app.use("/api/v1/company-ai", companyAIRoutes);
 app.use("/api/v1/copilot", copilotRoutes);
 app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/feedback", feedbackRoutes);
 
 // Route Not Found
 app.use((req, res, next) => {
